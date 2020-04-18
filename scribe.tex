@@ -1,0 +1,109 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amsfonts,amssymb,amsthm}
+\usepackage{times}
+
+\usepackage{geometry}
+\geometry{verbose,tmargin=2cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+
+\makeatletter
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{claim}[theorem]{Claim}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{definition}
+\newtheorem{example}[theorem]{Example}
+
+\makeatother
+
+
+%%% fill in details here
+\def \lecturenum  {1}
+\def \lecturedate {February 4, 2019}
+\def \scribe      {John }
+%%%
+
+\input{defs}
+
+\begin{document}
+
+%%% make header - do not modify! 
+\noindent
+\begin{minipage}[t]{1\columnwidth}%
+\textsc{Introduction to Online Learning}\hspace*{\fill}48717
+\vspace{2mm}
+
+\textsc{\LARGE Lecture \#\lecturenum}\hspace*{\fill}\textsc{\lecturedate}
+
+\noindent \rule[0.5ex]{1\linewidth}{1pt}
+
+\textsc{Lecturer: Kfir Levy\hspace*{\fill}Scribe: \scribe}
+\vspace{10mm}
+\end{minipage}
+%%%
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% BODY OF SCRIBE NOTES GOES HERE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+\section{A Section}
+
+\subsection{A Subsection}
+
+\begin{definition}
+A definition. hypothesis class $\H$.
+\end{definition}
+
+\begin{lemma}
+A lemma.
+\end{lemma}
+
+\begin{theorem}
+A theorem.
+\end{theorem}
+
+\begin{example}
+An example.
+\end{example}
+
+\section{Notation }
+
+We use the following mathematical notation in this writeup:
+\begin{itemize}
+\item
+$d$-dimensional  Euclidean space is denoted $\reals^d$. 
+\item
+Vectors are denoted by boldface lower-case letters such as $\x \in \reals^d$.  Coordinates of vectors are denoted by regular brackets $\x(i)$ 
+\item
+Matrices are denoted by boldface upper-case letters such as $\mathbf{X}  \in \reals^{m \times n}$.  Their coordinates by $\mathbf{X}(i,j)$. 
+\item
+Functions are denoted by lower case letters $f: \reals^d \mapsto \reals$. 
+
+\item 
+The $k$-th differential of function $f$ is denoted by $\nabla^k f \in \reals^{d^k}$.  The gradient is denoted without the superscript, as $\nabla f$. 
+
+\item
+We use the mathbb macro for sets, such as $\K \subseteq \reals^d$.  
+
+\end{itemize}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
