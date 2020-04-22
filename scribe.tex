@@ -5,6 +5,9 @@
 \usepackage{geometry}
 \geometry{verbose,tmargin=2cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
 
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+
 \makeatletter
 
 \newtheorem{theorem}{Theorem}[section]
@@ -27,6 +30,14 @@
 %%%
 
 \input{defs}
+\newcommand{\pth}[1]{\left( #1\right)}                 % Parenthesis (*)
+\newcommand{\brk}[1]{\left[ #1\right]}                 % Square brackets [*]
+\newcommand{\braces}[1]{\left\lbrace #1\right\rbrace } % curly braces {*}
+
+\newcommand{\wrt}{w.r.t.}
+\newcommand{\strongcvx}[1]{#1-strongly convex}
+\newcommand{\Kset}{\ensuremath{K}}
+\renewcommand{\regret}{\ensuremath{\mathrm{{Reg}}}}
 
 \begin{document}
 
@@ -64,29 +75,188 @@
 \section{Preliminaries}
 
 \subsection{Dual norm}
+\begin{definition}
+Let $\norm{\cdot}$ be a norm. Its dual norm is
+\begin{equation*}
+	\norm{y}_* \triangleq \max_{\norm{x} \leq 1} {x^T y}
+\end{equation*}
+\end{definition}
+
+Dual norm is denoted by $*$ either as subscript or as superscript.
+
+\begin{example}
+Dual of $\norm{\cdot}_2$ is $\norm{\cdot}_2$.
+\end{example}
+
+\begin{example}
+For a matrix A we define $ \norm{x}_A \triangleq \sqrt{x^T A x} $. Then $ \norm{x}_A^* = \norm{x}_{A^{-1}} $.
+\end{example}
+
+\begin{example}
+For $p \geq 1$ we define $ \norm{x}_p \triangleq \pth{\sum_i x_i^p}^{1/p} $. Then $\norm{x}_p^* = \norm{x}_q$ for $q$ such that $ \frac{1}{p} + \frac{1}{q} = 1 $.
+\end{example}
+
+\begin{lemma}
+Generalized Cauchy–Schwarz inequality
+\begin{equation*}
+x^T z \leq \norm{x} \norm{y}_*
+\end{equation*}
+\end{lemma}
 
 \subsection{Strong convexity}
+\begin{definition}
+Let \Kset{} be a convex compact set and $\norm{\cdot}$ be a general norm. Let function $\R : \Kset \to \reals$.
+
+\R{} is $\mu$-strongly convex if
+\begin{equation*}
+\R(y) \geq \R(x) + {\nabla\R(x)}^T (y-x) + \frac{\mu}{2} \norm{x - y}^2
+\end{equation*}
+
+\end{definition}
+
 
 \subsection{Bregman divergence}
+\begin{definition}
+Let \R{} be a convex and differentiable function. Its Bregman divergence is
+\begin{equation*}
+B_\R (x,y) \triangleq \R(x) - \R(y) - {\nabla \R(y)}^T \pth{x - y}
+\end{equation*}
+\end{definition}
+
+For a linear function $ B_\R \equiv 0 $.
+
+Adding a linear term to a function doesn't change its Bregman divergence.
+
+If $ \R(\cdot) $ is \strongcvx{1} \wrt{} $ \norm{\cdot} $ then $ B_\R(x,y) \geq \frac{1}{2} \norm{x-y}^2 $, and $B_\R(x,y)$ is \strongcvx{1} in $x$.
+
+If \R{} is convex, $ B_\R(x,y) \geq 0, \; \forall x,y$.
+
+\begin{example}
+$ \R(x) = a x + b
+\implies
+B_\R(x,y) = 0 $.
+\end{example}
+
+\begin{example}
+$ \R(x) = \frac{1}{2} \norm{x}_2^2
+\implies 
+B_\R(x,y) = \frac{1}{2} \norm{x - y}_2^2 $.
+\end{example}
+
+\begin{example}
+We denote simplex: $ \simplex \triangleq \braces{ x \in \reals^N, \sum_{i=1}^{N} x_i = 1, \forall i: x_i \geq 0 } $.
+
+Let $ \R : \simplex \to \reals $ be negative entropy: 
+$$ \R(p) = \sum_{i=1}^{N} p(i) \log p(i) $$
+
+Then its Bregman divergence is relative entropy: 
+$$\forall p,q \in \simplex:\quad B_\R(p,q) = \sum_{i=1}^{N} p(i) \log \frac{p(i)}{q(i)} $$
+
+Also, $\R(p)$ is \strongcvx{1} \wrt{} $ \norm{\cdot}_1 $ on \simplex{}.
+\end{example}
+
+
+\begin{example}
+Let $ \braces{c_i}$ be constants, and let $ \R : \simplex \to \reals $ be barrier funciton: 
+$$ \R(p) = \sum_{i=1}^{N} c_i \log \frac{1}{p(i)} $$
+
+Then its Bregman divergence is 
+$$ \forall p,q \in \simplex:\quad B_\R(p,q) = \sum_{i=1}^{N} { c_i \pth{ \log \frac{q(i)}{p(i)} + \frac{p(i) - q(i)}{q(i)} }} $$
+\end{example}
 
 \subsection{Optimality in convex optimization}
 
+\begin{lemma}
+Let $\Kset \succeq \reals^d $ be a convex compact set, and let $ f: \Kset \to \reals $ be a convex function.
+
+Denote 
+\begin{equation*}
+x^* = \argmin_{x \in \Kset} f(x)
+\end{equation*}
+
+Then
+\begin{equation*}
+\forall x \in \Kset: \quad {\nabla f(x^*)}^T (x-x^*) \geq 0
+\end{equation*}
+\end{lemma}
+
+The intuition is that angle between the gradient at optimal point and any other point in the set is not greater than $90\deg$, otherwise there would exist a feasible descent direction contradicting the optimality of $x^*$.
+
+\includegraphics[scale=0.5]{convex_optimality}
+
+
 \subsection{Derivative of Bregman divergence}
 
+\begin{lemma}
+Differentiating Bregman divergence by the first argument gives:
+\begin{equation*}
+\nabla_x B_\R (x,y) = \nabla \R(x) - \nabla \R(y)
+\end{equation*}
+
+\end{lemma}
+
 \subsection{Three point inequality}
+
+\begin{lemma}
+The following inequality holds:
+\begin{equation*}
+B_\R (x,y) + B_\R (y,z) \leq B_\R (x,z) + \pth{\nabla \R(z) - \nabla \R(y)}^T \pth{x-y}
+\end{equation*}
+
+\end{lemma}
+
 
 \section{Online Mirror Descent}
 
 \subsection{Motivation}
+
+There are two meta-algorithms (templates) for online learning that can have sublinear regret bounds. The algorithms that we've seen earlier (Hedge, OGD) can be obtained as private cases of these templates. These two meta-algorithms are:
+\begin{itemize}
+\item Online Mirror Descent (OMD)
+\item Follow the Regularized Leader (FTRL)
+\end{itemize}
+
+
+
+In the following we look into the OMD meta-algorithm.
+We start by looking at an imaginary game with different setting than the regular OCO protocol: now the loss function at each round is known to the player before he makes the decision.
+For every $t \in \brk{T} $:
+\begin{itemize}
+\item The adversary reveals the loss function $ f_t(\cdot) $.
+\item The player picks $ x_t \in \Kset $ and incurs loss $ f_t(x_t) $.
+\end{itemize}
+
+This setting is much easier than OCO. One possible algorithm in this setting is Best Response:
+\begin{equation*}
+x_t = \argmin_{x \in \Kset} f_t(x)
+\end{equation*} 
+
+\begin{theorem}
+Best Response ensures $ \regret_T \leq 0 $.
+\end{theorem}
+
+\begin{proof}
+By definition
+\begin{equation*}
+\begin{aligned}
+f_t(x_t) & \leq f_t(x), \quad \forall x \in \Kset
+\\
+\regret_T & = \min_{x \in \Kset} \sum_{t=1}^{T} \pth{f_t(x_t) - f_t(x)} \leq 0
+\end{aligned}
+\end{equation*}
+\end{proof}
+
+Remark: Best Response doesn't require convexity of the loss functions.
+
 
 \subsection{The algorithm}
 linear, convex
 
 \subsection{Regret bound}
 
-\subsection{Special cases}
+\subsection{Private cases}
 
-\subsection{Proof of the bound}
+\subsection{Proof of regret bound}
 
 
 
