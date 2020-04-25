@@ -7,6 +7,7 @@
 
 \usepackage{graphicx}
 \graphicspath{ {./images/} }
+\usepackage[ruled,vlined]{algorithm2e}
 
 \makeatletter
 
@@ -250,11 +251,162 @@ Remark: Best Response doesn't require convexity of the loss functions.
 
 
 \subsection{The algorithm}
-linear, convex
+
+We now introduce an algorithm that is inspired by Best Response, but works in the standard OCO setting. Reminder, the OCO protocol is:
+For every $t \in \brk{T} $:
+\begin{itemize}
+\item The player picks $ x_t \in \Kset $.
+\item The adversary reveals the loss function $ f_t(\cdot) $.
+\item The player incurs loss $ f_t(x_t) $ and receives $ f_t(\cdot) $ as feedback.
+\end{itemize}
+
+Let's assume that we have a function (called regularization function) $ \R : \Kset \to \reals $, such that \R{} is \strongcvx{1} \wrt a norm $\norm{\cdot}$.
+
+\begin{algorithm}[H]
+\SetKwInput{KwParam}{Parameters}
+\SetAlgoLined
+\KwParam{ $ \R : \Kset \to \reals $ , $ \eta > 0 $ }
+%\KwResult{Write here the result }
+$ x_1 = \argmin_{x \in \Kset} \R(x) $
+\;
+ \For{$t \in \brk{T}$}{
+  $ x_{t+1} = \argmin_{x \in \Kset} \pth{ f_t(x) + \frac{1}{\eta} B_\R(x, x_t) } $\;
+ }
+ \caption{Online Mirror Descent}
+\end{algorithm}
+
+Unlike Best Response, this algorithm uses the last observed loss function and not the next one. It uses proximity to the last point to ensure stability of the solution and incorporate information from earlier rounds.
+
+Remarks on linearizing the loss function:
+\begin{itemize}
+\item If losses are linear the rule becomes $ x_{t+1} = \argmin_{x \in \Kset} \pth{ g_t^T x + \frac{1}{\eta} B_\R(x, x_t) } $.
+
+\item If losses are general convex functions, we can linearize them:
+
+$ g_t = \nabla f_t(x) $; \quad
+$ x_{t+1} = \argmin_{x \in \Kset} \pth{ g_t^T x + \frac{1}{\eta} B_\R(x, x_t) } $.
+
+\item Such linearization simplifies the optimization problem.
+
+\item This is a pessimistic approximation of the loss:
+
+$ \forall x: \; f_t(x_t) - f_t(x) \leq \tilde{f}_t(x_t) - \tilde{f}_t(x_t) = \nabla f_t(x_t)^T (x_t - x)$
+
+\item The original loss or another approximation of it may be used instead.
+
+\end{itemize}
+
+Design choices in the OMD algorithm:
+\begin{itemize}
+\item Regularization function \R{} and the corresponding $ B_\R$.
+\item Approximation of the losses.
+\item Learning rate $\eta$.
+\end{itemize}
+
 
 \subsection{Regret bound}
 
+We will denote:
+
+\begin{equation*}
+D \triangleq \sqrt{ \max_{x} B_\R \pth{ x, \argmin_{y \in \Kset}{\R(y)}}}
+\end{equation*}
+
+\begin{equation*}
+G \triangleq \mycases{\max_{t \in \brk{T}} \norm{g_t}_* }{\text{linear loss}}{\max_{t \in \brk{T}, x \in \Kset} \norm{ \nabla f_t(x) }_* }{\text{general convex loss}}
+\end{equation*}
+
+\begin{theorem}[OMD regret bound]
+Setting $ \eta = \frac{D}{G \sqrt{T}} $ guarantees $ \regret_T \leq G D \sqrt{T}$.
+\end{theorem}
+
+Note that such $G$ and $D$ may be better than what we've previously had for Hedge and OGD.
+
+
 \subsection{Private cases}
+
+\subsubsection{OGD}
+
+We will set $ \R(x) = \frac{1}{2} \norm{x}_2^2 $, and use linearized loss.
+
+Then OMD update rule becomes:
+\begin{equation*}
+\begin{aligned}
+x_{t+1}
+&= \argmin_{x \in \Kset} \pth{ g_t^T x + \frac{1}{2 \eta} \norm{x - x_t}_2^2 }
+\\&= \argmin_{x \in \Kset} \pth{ \frac{1}{2 \eta} \norm{x - x_t + \eta g_t}_2^2 + \text{const} }
+\\&= \argmin_{x \in \Kset} \pth{ \norm{x - (x_t - \eta g_t)}_2 }
+\\&= \Pi_\Kset^{\norm{\cdot}_2} (x_t - \eta g_t)
+\end{aligned}
+\end{equation*}
+
+Therefore the update rule in this case is same as OGD.
+
+
+\subsubsection{Hedge}
+
+We look at the experts setting.
+
+The player decisions lie in the simplex: $ p \in \Kset = \simplex = \braces{ p \in \reals^N, \sum_{i=1}^{N} p(i) = 1, \forall i: p(i) \geq 0 } $.
+
+The loss is a combination of per-expert losses: $ f_t{p} = \L_t^T p $, $ \L_t = \pth{ \L_t(1), \L_t(2), \dots , \L_t(N)} $, $ \L_t(i) \in \brk{0, 1}$
+
+We will use negative entropy as regularization: $ \R(x) = \sum_{i=1}^{N} p(i) \log p(i) $.
+
+Then OMD update rule becomes:
+\begin{equation*}
+\begin{aligned}
+p_{t+1}
+&= \argmin_{p \in \simplex} \pth{ \L_t^T p + \frac{1}{\eta} \sum_{i=1}^{N} p(i) \log \frac{p(i)}{p_t(i)} }
+\end{aligned}
+\end{equation*}
+
+We will solve it ignoring the inequality constraints of \simplex{}, they will be satisfied anyway.
+The problem becomes
+\begin{equation*}
+\argmin_{\sum_{i=1}^{N} p(i) = 1} \pth{ \L_t^T p + \frac{1}{\eta} \sum_{i=1}^{N} p(i) \log \frac{p(i)}{p_t(i)} }
+\end{equation*}
+
+Its Lagrangian is:
+\begin{equation*}
+L(p, \lambda) = \L_t^T p + \frac{1}{\eta} \sum_{i=1}^{N} p(i) \log \frac{p(i)}{p_t(i)} + \lambda \pth{ \sum_{i=1}^{N} p(i) - 1 }
+\end{equation*}
+
+\begin{equation*}
+\frac{\partial L(p, \lambda) }{\partial p(i)} = \L_t(i) + \frac{1}{\eta} \pth{ \log \frac{p(i)}{p_t(i)} + 1} + \lambda = 0
+\end{equation*}
+
+\begin{equation*}
+\begin{aligned}
+\log \frac{p(i)}{p_t(i)} &= -\eta \L_t(i) - \eta (1 + \lambda)
+\\
+p(i) &= C p_t(i) e^{-\eta \L_t(i)}, & C = e^{-\eta (1+\lambda)} 
+\end{aligned}
+\end{equation*}
+
+We need to set $\lambda$ to satisfy the constraints, which is equivalent to setting $C$ to a positive number that satisfies the sum constraint; the non-negativeness constraint is satisfied because $C$, $p_t(i)$ and $e^{-\eta \L_t(i)}$ are all non-negative.
+
+We can also write the decision rule as:
+\begin{equation*}
+p(i) \propto p_t(i) e^{-\eta \L_t(i)}
+\end{equation*}
+
+And if we apply it recursively we get:
+\begin{equation*}
+\begin{aligned}
+p(i) &\propto p_t(i) e^{-\eta \L_t(i)}
+\\
+&\propto p_{t-1}(i) e^{-\eta \pth{ \L_{t-1}(i) + \L_t(i) }}
+\\
+&\propto \dots
+\\
+&\propto p_{1}(i) e^{-\eta \L_{1:t}(i)}
+\end{aligned}
+\end{equation*}
+
+Recall that $p_1$ must minimize $\R(p)$, which in this case means $ p_1(i) = \frac{1}{N} \quad \forall i $. And this gives us the decision rule that we had in the Hedge algorithm: $ p_{t+1}(i) \propto e^{-\eta \L_{1:t}(i)} $.
+
+
 
 \subsection{Proof of regret bound}
 
