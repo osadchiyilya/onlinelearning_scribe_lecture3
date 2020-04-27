@@ -37,7 +37,7 @@
 
 \newcommand{\wrt}{w.r.t.}
 \newcommand{\strongcvx}[1]{#1-strongly convex}
-\newcommand{\Kset}{\ensuremath{K}}
+\newcommand{\Kset}{\ensuremath{\K}}
 \renewcommand{\regret}{\ensuremath{\mathrm{{Reg}}}}
 
 \begin{document}
@@ -123,6 +123,8 @@ Let \R{} be a convex and differentiable function. Its Bregman divergence is
 B_\R (x,y) \triangleq \R(x) - \R(y) - {\nabla \R(y)}^T \pth{x - y}
 \end{equation*}
 \end{definition}
+
+Intuition: a distance function induced by a convex function.
 
 For a linear function $ B_\R \equiv 0 $.
 
@@ -211,7 +213,7 @@ B_\R (x,y) + B_\R (y,z) \leq B_\R (x,z) + \pth{\nabla \R(z) - \nabla \R(y)}^T \p
 
 \subsection{Motivation}
 
-There are two meta-algorithms (templates) for online learning that can have sublinear regret bounds. The algorithms that we've seen earlier (Hedge, OGD) can be obtained as private cases of these templates. These two meta-algorithms are:
+There are two meta-algorithms (templates) for online learning with sublinear regret bounds. The algorithms that we've seen earlier (Hedge, OGD) can be obtained as private cases of these templates. These two meta-algorithms are:
 \begin{itemize}
 \item Online Mirror Descent (OMD)
 \item Follow the Regularized Leader (FTRL)
@@ -247,7 +249,12 @@ f_t(x_t) & \leq f_t(x), \quad \forall x \in \Kset
 \end{equation*}
 \end{proof}
 
-Remark: Best Response doesn't require convexity of the loss functions.
+Comments:
+\begin{itemize}
+\item Best Response doesn't require convexity of the loss functions.
+\item In literature Best Response may refer to a similar algorithm in the standard OCO setting.
+\end{itemize}
+
 
 
 \subsection{The algorithm}
@@ -261,6 +268,7 @@ For every $t \in \brk{T} $:
 \end{itemize}
 
 Let's assume that we have a function (called regularization function) $ \R : \Kset \to \reals $, such that \R{} is \strongcvx{1} \wrt a norm $\norm{\cdot}$.
+And let $B_\R(x, y)$ denote Bregman divergence induced by $\R$.
 
 \begin{algorithm}[H]
 \SetKwInput{KwParam}{Parameters}
@@ -279,18 +287,28 @@ Unlike Best Response, this algorithm uses the last observed loss function and no
 
 Remarks on linearizing the loss function:
 \begin{itemize}
-\item If losses are linear the rule becomes $ x_{t+1} = \argmin_{x \in \Kset} \pth{ g_t^T x + \frac{1}{\eta} B_\R(x, x_t) } $.
+\item If losses are linear the rule becomes 
+\begin{equation*}
+x_{t+1} = \argmin_{x \in \Kset} \pth{ g_t^T x + \frac{1}{\eta} B_\R(x, x_t) }
+\end{equation*}
 
 \item If losses are general convex functions, we can linearize them:
-
-$ g_t = \nabla f_t(x) $; \quad
-$ x_{t+1} = \argmin_{x \in \Kset} \pth{ g_t^T x + \frac{1}{\eta} B_\R(x, x_t) } $.
+\begin{equation*}
+g_t = \nabla f_t(x),
+\quad
+x_{t+1} = \argmin_{x \in \Kset} \pth{ g_t^T x + \frac{1}{\eta} B_\R(x, x_t) }
+\end{equation*}
 
 \item Such linearization simplifies the optimization problem.
 
 \item This is a pessimistic approximation of the loss:
-
-$ \forall x: \; f_t(x_t) - f_t(x) \leq \tilde{f}_t(x_t) - \tilde{f}_t(x_t) = \nabla f_t(x_t)^T (x_t - x)$
+\begin{equation*}
+\begin{aligned}
+&\tilde{f}_t(x) = f_t(x_t) + \nabla f_t(x_t) \pth{x - x_t}
+\\
+&\forall x: \; f_t(x_t) - f_t(x) \leq \tilde{f}_t(x_t) - \tilde{f}_t(x_t) = \nabla f_t(x_t)^T (x_t - x)
+\end{aligned}
+\end{equation*}
 
 \item The original loss or another approximation of it may be used instead.
 
@@ -309,7 +327,7 @@ Design choices in the OMD algorithm:
 We will denote:
 
 \begin{equation*}
-D \triangleq \sqrt{ \max_{x} B_\R \pth{ x, \argmin_{y \in \Kset}{\R(y)}}}
+D \triangleq \sqrt{ \max_{x} B_\R \pth{ x, y}}, \quad y = \argmin_{y \in \Kset}{\R(y)}
 \end{equation*}
 
 \begin{equation*}
@@ -320,7 +338,7 @@ G \triangleq \mycases{\max_{t \in \brk{T}} \norm{g_t}_* }{\text{linear loss}}{\m
 Setting $ \eta = \frac{D}{G \sqrt{T}} $ guarantees $ \regret_T \leq G D \sqrt{T}$.
 \end{theorem}
 
-Note that such $G$ and $D$ may be better than what we've previously had for Hedge and OGD.
+Note that such $G$ and $D$ may be better than what we've previously had for Hedge and OGD, because we can choose $\R$ and the norm.
 
 
 \subsection{Private cases}
@@ -408,7 +426,8 @@ Recall that $p_1$ must minimize $\R(p)$, which in this case means $ p_1(i) = \fr
 
 
 
-\subsection{Proof of regret bound}
+%\subsection{Proof of regret bound}
+
 
 
 
@@ -428,27 +447,27 @@ Recall that $p_1$ must minimize $\R(p)$, which in this case means $ p_1(i) = \fr
 %An example.
 %\end{example}
 
-\section{Notation }
-
-We use the following mathematical notation in this writeup:
-\begin{itemize}
-\item
-$d$-dimensional  Euclidean space is denoted $\reals^d$. 
-\item
-Vectors are denoted by boldface lower-case letters such as $\x \in \reals^d$.  Coordinates of vectors are denoted by regular brackets $\x(i)$ 
-\item
-Matrices are denoted by boldface upper-case letters such as $\mathbf{X}  \in \reals^{m \times n}$.  Their coordinates by $\mathbf{X}(i,j)$. 
-\item
-Functions are denoted by lower case letters $f: \reals^d \mapsto \reals$. 
-
-\item 
-The $k$-th differential of function $f$ is denoted by $\nabla^k f \in \reals^{d^k}$.  The gradient is denoted without the superscript, as $\nabla f$. 
-
-\item
-We use the mathbb macro for sets, such as $\K \subseteq \reals^d$.  
-
-\end{itemize}
-
+%\section{Notation }
+%
+%We use the following mathematical notation in this writeup:
+%\begin{itemize}
+%\item
+%$d$-dimensional  Euclidean space is denoted $\reals^d$. 
+%\item
+%Vectors are denoted by boldface lower-case letters such as $\x \in \reals^d$.  Coordinates of vectors are denoted by regular brackets $\x(i)$ 
+%\item
+%Matrices are denoted by boldface upper-case letters such as $\mathbf{X}  \in \reals^{m \times n}$.  Their coordinates by $\mathbf{X}(i,j)$. 
+%\item
+%Functions are denoted by lower case letters $f: \reals^d \mapsto \reals$. 
+%
+%\item 
+%The $k$-th differential of function $f$ is denoted by $\nabla^k f \in \reals^{d^k}$.  The gradient is denoted without the superscript, as $\nabla f$. 
+%
+%\item
+%We use the mathbb macro for sets, such as $\K \subseteq \reals^d$.  
+%
+%\end{itemize}
+%
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
